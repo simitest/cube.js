@@ -81,9 +81,10 @@ pub fn parse_sql_to_statements(
     let query = query.replace(
         "SELECT\
 \n                  i.relname as relname,\
-\n                  ix.indisunique, ix.indexprs, ix.indpred,\
+\n                  ix.indisunique, ix.indexprs,\
 \n                  a.attname, a.attnum, c.conrelid, ix.indkey::varchar,\
 \n                  ix.indoption::varchar, i.reloptions, am.amname,\
+\n                  pg_get_expr(ix.indpred, ix.indrelid),\
 \n                  ix.indnkeyatts as indnkeyatts\
 \n              FROM\
 \n                  pg_class t\
@@ -126,7 +127,7 @@ pub fn parse_sql_to_statements(
 \n              WHERE\
 \n                  t.relkind IN ('r', 'v', 'f', 'm', 'p')",
     );
-
+    log::debug!("Query after replace: {}", query);
     let query = query.replace(
         "and ix.indisprimary = 'f'\
 \n              ORDER BY\

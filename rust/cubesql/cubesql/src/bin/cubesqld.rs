@@ -43,7 +43,7 @@ fn main() {
     let runtime = Builder::new_multi_thread().enable_all().build().unwrap();
     runtime.block_on(async move {
         let services = config.configure().await;
-        log::debug!("Cube SQL Start");
+        log::debug!("Cube SQL Start (Kivi)");
         stop_on_ctrl_c(&services).await;
         services.wait_processing_loops().await.unwrap();
     });
