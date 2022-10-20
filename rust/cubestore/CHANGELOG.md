@@ -3,6 +3,105 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.31.5](https://github.com/cube-js/cube.js/compare/v0.31.4...v0.31.5) (2022-10-20)
+
+
+### Features
+
+* **cubestore:** CC-1133 - add headers to telemetry request ([#5473](https://github.com/cube-js/cube.js/issues/5473)) ([26fa817](https://github.com/cube-js/cube.js/commit/26fa8173961adfc756cee0a9bb626219f33c35b2))
+
+
+
+
+
+## [0.31.4](https://github.com/cube-js/cube.js/compare/v0.31.3...v0.31.4) (2022-10-13)
+
+
+### Bug Fixes
+
+* **cubestore:** Extension planner for LogicalAlias error ([#5459](https://github.com/cube-js/cube.js/issues/5459)) ([8153459](https://github.com/cube-js/cube.js/commit/8153459c70ddf9acef7e886a6e44971c1aa82660))
+
+
+
+
+
+## [0.31.2](https://github.com/cube-js/cube.js/compare/v0.31.1...v0.31.2) (2022-10-08)
+
+
+### Bug Fixes
+
+* Temp tables dropped for ksql after successfully created ([#5445](https://github.com/cube-js/cube.js/issues/5445)) ([7726c82](https://github.com/cube-js/cube.js/commit/7726c82fc833a6b14eeeb498a31df62ba9818336))
+
+
+
+
+
+# [0.31.0](https://github.com/cube-js/cube.js/compare/v0.30.75...v0.31.0) (2022-10-03)
+
+
+### Bug Fixes
+
+* **cubestore:** Aggregate function MERGE not allowed for column type bytes ([#5166](https://github.com/cube-js/cube.js/issues/5166)) ([7626ed5](https://github.com/cube-js/cube.js/commit/7626ed5fa308854ba625f0956c29b21c84484b67))
+* **cubestore:** Fix error: Internal: channel closed on the next request after cubestore cloud process got OOM ([#5238](https://github.com/cube-js/cube.js/issues/5238)) ([cb81fdb](https://github.com/cube-js/cube.js/commit/cb81fdb79c5b768892831437659e1591773d8e15))
+
+
+
+
+
+## [0.30.75](https://github.com/cube-js/cube.js/compare/v0.30.74...v0.30.75) (2022-09-22)
+
+**Note:** Version bump only for package @cubejs-backend/cubestore
+
+
+
+
+
+## [0.30.72](https://github.com/cube-js/cube.js/compare/v0.30.71...v0.30.72) (2022-09-18)
+
+
+### Bug Fixes
+
+* **cubestore:** Immediately restart stale streaming jobs to avoid processing gaps for sparse streams ([60075af](https://github.com/cube-js/cube.js/commit/60075af851050b5b21b12881d553e318527e4ce7))
+
+
+
+
+
+## [0.30.71](https://github.com/cube-js/cube.js/compare/v0.30.70...v0.30.71) (2022-09-16)
+
+**Note:** Version bump only for package @cubejs-backend/cubestore
+
+
+
+
+
+## [0.30.69](https://github.com/cube-js/cube.js/compare/v0.30.68...v0.30.69) (2022-09-13)
+
+**Note:** Version bump only for package @cubejs-backend/cubestore
+
+
+
+
+
+## [0.30.65](https://github.com/cube-js/cube.js/compare/v0.30.64...v0.30.65) (2022-09-07)
+
+
+### Bug Fixes
+
+* **cubestore:** Fix 'no such file or directory' after cubestore restart ([#5247](https://github.com/cube-js/cube.js/issues/5247)) ([efaf897](https://github.com/cube-js/cube.js/commit/efaf8972c2751cbb5c5852b91a5c22b171f6064b))
+
+
+
+
+
+## [0.30.61](https://github.com/cube-js/cube.js/compare/v0.30.60...v0.30.61) (2022-09-01)
+
+**Note:** Version bump only for package @cubejs-backend/cubestore
+
+
+
+
+
 ## [0.30.60](https://github.com/cube-js/cube.js/compare/v0.30.59...v0.30.60) (2022-08-28)
 
 

@@ -10,6 +10,12 @@ import { LocalQueueEventsBus } from './LocalQueueEventsBus';
 
 export type CacheAndQueryDriverType = 'redis' | 'memory';
 
+export enum DriverType {
+  External = 'external',
+  Internal = 'internal',
+  Cache = 'cache',
+}
+
 export interface QueryOrchestratorOptions {
   externalDriverFactory?: DriverFactory;
   cacheAndQueueDriver?: CacheAndQueryDriverType;
@@ -120,6 +126,34 @@ export class QueryOrchestrator {
     await this.queryCache.forceReconcile(datasource);
   }
 
+  /**
+   * Determines whether the partition table is already exists or not.
+   */
+  public async isPartitionExist(
+    request: string,
+    external: boolean,
+    dataSource = 'default',
+    schema: string,
+    table: string,
+    key: any[],
+    token: string,
+  ): Promise<[boolean, string]> {
+    return this.preAggregations.isPartitionExist(
+      request,
+      external,
+      dataSource,
+      schema,
+      table,
+      key,
+      token,
+    );
+  }
+
+  /**
+   * Push query to the queue, fetch and return result if query takes
+   * less than `continueWaitTimeout` seconds, throw `ContinueWaitError`
+   * error otherwise.
+   */
   public async fetchQuery(queryBody: any): Promise<any> {
     const { preAggregationsTablesToTempTables, values } = await this.preAggregations.loadAllPreAggregationsIfNeeded(queryBody);
 
@@ -145,10 +179,21 @@ export class QueryOrchestrator {
     let lastRefreshTimestamp = getLastUpdatedAtTimestamp(preAggregationsTablesToTempTables.map(pa => new Date(pa[1].lastUpdatedAt)));
 
     if (!queryBody.query) {
-      return {
-        usedPreAggregations,
-        lastRefreshTime: lastRefreshTimestamp && new Date(lastRefreshTimestamp),
-      };
+      // We want to return a more convenient and filled object for the following
+      // processing for a jobed build query (initialized by the
+      // /cubejs-system/v1/pre-aggregations/jobs endpoint).
+      if (queryBody.isJob) {
+        return preAggregationsTablesToTempTables.map((pa) => ({
+          preAggregation: queryBody.preAggregations[0].preAggregationId,
+          tableName: pa[0],
+          ...pa[1],
+        }));
+      } else {
+        return {
+          usedPreAggregations,
+          lastRefreshTime: lastRefreshTimestamp && new Date(lastRefreshTimestamp),
+        };
+      }
     }
 
     const result = await this.queryCache.cachedQueryResult(
@@ -223,9 +268,14 @@ export class QueryOrchestrator {
     return this.queryCache.resultFromCacheIfExists(queryBody);
   }
 
-  public async testConnections() {
+  public async testConnections(): Promise<void> {
     // @todo Possible, We will allow to use different drivers for cache and queue, dont forget to add both
-    return this.queryCache.testConnection();
+    try {
+      await this.queryCache.testConnection();
+    } catch (e: any) {
+      e.driverType = DriverType.Cache;
+      throw e;
+    }
   }
 
   public async cleanup() {

@@ -63,7 +63,8 @@ impl PostgresIntegrationTestSuite {
                 c
             });
 
-            let services = config.configure().await;
+            config.configure().await;
+            let services = config.cube_services().await;
             services.wait_processing_loops().await.unwrap();
         });
 
@@ -781,6 +782,16 @@ impl PostgresIntegrationTestSuite {
 
         let messages = new_client
             .simple_query(&"SELECT current_database()")
+            .await?;
+        if let SimpleQueryMessage::Row(row) = &messages[0] {
+            // default one
+            assert_eq!(row.get(0), Some("meow"));
+        } else {
+            panic!("Must be Row command, 0")
+        }
+
+        let messages = new_client
+            .simple_query(&"SELECT table_catalog FROM information_schema.tables LIMIT 1")
             .await?;
         if let SimpleQueryMessage::Row(row) = &messages[0] {
             // default one

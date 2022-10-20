@@ -49,7 +49,8 @@ use super::information_schema::postgres::{
     PgCatalogMatviewsProvider, PgCatalogNamespaceProvider, PgCatalogProcProvider,
     PgCatalogRangeProvider, PgCatalogRolesProvider, PgCatalogSequenceProvider,
     PgCatalogSettingsProvider, PgCatalogStatActivityProvider, PgCatalogStatioUserTablesProvider,
-    PgCatalogTableProvider, PgCatalogTypeProvider, PgPreparedStatementsProvider,
+    PgCatalogStatsProvider, PgCatalogTableProvider, PgCatalogTypeProvider,
+    PgPreparedStatementsProvider,
 };
 
 use super::information_schema::redshift::{
@@ -329,6 +330,8 @@ impl DatabaseProtocol {
             "pg_catalog.pg_statio_user_tables".to_string()
         } else if let Some(_) = any.downcast_ref::<PgCatalogSequenceProvider>() {
             "pg_catalog.pg_sequence".to_string()
+        } else if let Some(_) = any.downcast_ref::<PgCatalogStatsProvider>() {
+            "pg_catalog.pg_stats".to_string()
         } else if let Some(_) = any.downcast_ref::<RedshiftSvvTablesTableProvider>() {
             "public.svv_tables".to_string()
         } else if let Some(_) = any.downcast_ref::<RedshiftSvvExternalSchemasTableProvider>() {
@@ -358,7 +361,7 @@ impl DatabaseProtocol {
     ) -> Option<std::sync::Arc<dyn datasource::TableProvider>> {
         let (_, schema, table) = match tr {
             datafusion::catalog::TableReference::Partial { schema, table, .. } => (
-                "db".to_string(),
+                context.session_state.database().unwrap_or("db".to_string()),
                 schema.to_ascii_lowercase(),
                 table.to_ascii_lowercase(),
             ),
@@ -374,13 +377,13 @@ impl DatabaseProtocol {
             datafusion::catalog::TableReference::Bare { table } => {
                 if table.starts_with("pg_") {
                     (
-                        "db".to_string(),
+                        context.session_state.database().unwrap_or("db".to_string()),
                         "pg_catalog".to_string(),
                         table.to_ascii_lowercase(),
                     )
                 } else {
                     (
-                        "db".to_string(),
+                        context.session_state.database().unwrap_or("db".to_string()),
                         "public".to_string(),
                         table.to_ascii_lowercase(),
                     )
@@ -405,6 +408,7 @@ impl DatabaseProtocol {
                 match table.as_str() {
                     "svv_tables" => {
                         return Some(Arc::new(RedshiftSvvTablesTableProvider::new(
+                            &context.session_state.database().unwrap_or("db".to_string()),
                             &context.meta.cubes,
                         )))
                     }
@@ -420,11 +424,13 @@ impl DatabaseProtocol {
             "information_schema" => match table.as_str() {
                 "columns" => {
                     return Some(Arc::new(PostgresSchemaColumnsProvider::new(
+                        &context.session_state.database().unwrap_or("db".to_string()),
                         &context.meta.cubes,
                     )))
                 }
                 "tables" => {
                     return Some(Arc::new(PostgresSchemaTableProvider::new(
+                        &context.session_state.database().unwrap_or("db".to_string()),
                         &context.meta.cubes,
                     )))
                 }
@@ -441,13 +447,15 @@ impl DatabaseProtocol {
                 }
                 "role_table_grants" => {
                     return Some(Arc::new(PostgresInfoSchemaRoleTableGrantsProvider::new(
-                        context.session_state.user().unwrap_or("test".to_string()),
+                        &context.session_state.database().unwrap_or("db".to_string()),
+                        &context.session_state.user().unwrap_or("test".to_string()),
                         &context.meta.cubes,
                     )))
                 }
                 "role_column_grants" => {
                     return Some(Arc::new(PostgresInfoSchemaRoleColumnGrantsProvider::new(
-                        context.session_state.user().unwrap_or("test".to_string()),
+                        &context.session_state.database().unwrap_or("db".to_string()),
+                        &context.session_state.user().unwrap_or("test".to_string()),
                         &context.meta.cubes,
                     )))
                 }
@@ -470,7 +478,10 @@ impl DatabaseProtocol {
             },
             "pg_catalog" => match table.as_str() {
                 "pg_tables" => {
-                    return Some(Arc::new(PgCatalogTableProvider::new(&context.meta.cubes)))
+                    return Some(Arc::new(PgCatalogTableProvider::new(
+                        &context.session_state.user().unwrap_or("test".to_string()),
+                        &context.meta.cubes,
+                    )))
                 }
                 "pg_type" => {
                     return Some(Arc::new(PgCatalogTypeProvider::new(&context.meta.tables)))
@@ -525,6 +536,9 @@ impl DatabaseProtocol {
                     )))
                 }
                 "pg_sequence" => return Some(Arc::new(PgCatalogSequenceProvider::new())),
+                "pg_stats" => {
+                    return Some(Arc::new(PgCatalogStatsProvider::new(&context.meta.tables)))
+                }
                 _ => return None,
             },
             _ => return None,
